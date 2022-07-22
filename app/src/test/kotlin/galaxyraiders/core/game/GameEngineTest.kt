@@ -1,5 +1,7 @@
 package galaxyraiders.core.game
 
+import galaxyraiders.core.physics.Point2D
+import galaxyraiders.core.physics.Vector2D
 import galaxyraiders.helpers.AverageValueGeneratorStub
 import galaxyraiders.helpers.ControllerSpy
 import galaxyraiders.helpers.MaxValueGeneratorStub
@@ -8,9 +10,7 @@ import galaxyraiders.helpers.VisualizerSpy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
+import kotlin.test.*
 
 @DisplayName("Given a game engine")
 class GameEngineTest {
@@ -36,6 +36,13 @@ class GameEngineTest {
     generator = minGenerator,
     controller = controllerSpy,
     visualizer = visualizerSpy,
+  )
+
+  private val asteroidMock = Asteroid(
+    initialPosition = Point2D(1.0, 1.0),
+    initialVelocity = Vector2D(0.0, 0.0),
+    radius = 1.0,
+    mass = 1.0,
   )
 
   @Test
@@ -122,6 +129,27 @@ class GameEngineTest {
       hardGame.field.asteroids.map { it.velocity }
 
     assertNotEquals(asteroidsInitialVelocity, asteroidsFinalVelocity)
+  }
+
+  @Test
+  fun `it creates an explosion after missile collides with asteroid`() {
+    hardGame.field.generateExplosion(asteroidMock)
+
+    val explosion = hardGame.field.explosions.last()
+    hardGame.handleExplosions()
+
+    assertTrue(explosion.isTriggered)
+  }
+
+  @Test
+  fun `it deletes explosion after time reduces 60`() {
+    hardGame.field.generateExplosion(asteroidMock)
+
+    val explosion = hardGame.field.explosions.last()
+    explosion.time = 0
+    hardGame.handleExplosions()
+
+    assertFalse(explosion.isTriggered)
   }
 
   @Test

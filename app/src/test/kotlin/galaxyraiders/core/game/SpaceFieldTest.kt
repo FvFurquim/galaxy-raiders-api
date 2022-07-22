@@ -28,6 +28,13 @@ class SpaceFieldTest {
     generator = generator,
   )
 
+  private val asteroidMock = Asteroid(
+    initialPosition = Point2D(1.0, 1.0),
+    initialVelocity = Vector2D(0.0, 0.0),
+    radius = 1.0,
+    mass = 1.0,
+  )
+
   @Test
   fun `it has its parameters initialized correctly `() {
     assertAll(
@@ -70,7 +77,7 @@ class SpaceFieldTest {
   }
 
   @Test
-  fun `it has a list of objects with ship, asteroids and missiles`() {
+  fun `it has a list of objects with ship, asteroids, missiles and explosions`() {
     val ship = spaceField.ship
 
     spaceField.generateAsteroid()
@@ -79,8 +86,11 @@ class SpaceFieldTest {
     spaceField.generateMissile()
     val missile = spaceField.missiles.last()
 
+    spaceField.generateExplosion(asteroid)
+    val explosion = spaceField.explosions.last()
+
     val expectedSpaceObjects = listOf<SpaceObject>(
-      ship, asteroid, missile
+      ship, asteroid, missile, explosion
     )
 
     assertEquals(expectedSpaceObjects, spaceField.spaceObjects)
@@ -182,6 +192,29 @@ class SpaceFieldTest {
       { assertTrue(asteroid.mass >= 500) },
       { assertTrue(asteroid.mass <= 1000) },
     )
+  }
+
+  @Test
+  fun `it can generate a new explosion`() {
+    val numExplosion = spaceField.explosions.size
+    spaceField.generateExplosion(asteroidMock)
+
+    assertEquals(numExplosion + 1, spaceField.explosions.size)
+  }
+  @Test
+  fun `it can generate a new explosion in the center of the collided Asteroid`() {
+    spaceField.generateExplosion(asteroidMock)
+    val explosion = spaceField.explosions.last()
+
+    assertEquals(asteroidMock.center, explosion.center)
+  }
+
+  @Test
+  fun `it can generate a new explosion with velocity ZERO`() {
+    spaceField.generateExplosion(asteroidMock)
+    val explosion = spaceField.explosions.last()
+
+    assertEquals(Vector2D(0.0, 0.0), explosion.velocity)
   }
 
   private companion object {
